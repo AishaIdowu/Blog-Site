@@ -2,7 +2,6 @@ const express = require("express");
 const router = express.Router();
 const Post = require("../models/Post");
 
-
 /**
  * GET/
  *  Home Routes
@@ -13,7 +12,7 @@ router.get("/", async (req, res) => {
       title: "NodeJs Blog",
       description: "Simple Blog created with NodeJs, Express and MongoDB.",
     };
-    
+
     // Pagination
     let perPage = 5;
     let page = req.query.page || 1;
@@ -32,12 +31,12 @@ router.get("/", async (req, res) => {
       data,
       current: page,
       nextPage: hasNextPage ? nextPage : null,
+      currentRoute: "/",
     });
   } catch (error) {
     console.log(error);
   }
 });
-
 
 /**
  * GET/
@@ -46,13 +45,14 @@ router.get("/", async (req, res) => {
 router.get("/post/:id", async (req, res) => {
   try {
     let slug = req.params.id;
-    const data = await Post.findById({_id: slug});
-    
+    const data = await Post.findById({ _id: slug });
+
     const locals = {
       title: data.title,
       description: "Simple Blog created with NodeJs, Express and MongoDB.",
+      currentRoute: `/post/${slug}`,
     };
-    
+
     res.render("post", { locals, data });
   } catch (error) {
     console.log(error);
@@ -63,31 +63,28 @@ router.get("/post/:id", async (req, res) => {
  * POST/
  *  post - searchTerm
  */
-router.post('/search', async (req, res) => {
+router.post("/search", async (req, res) => {
   try {
     const locals = {
-      title: 'Search',
-      description: 'Simple Blog created with NodeJs, Express & MongoDB.'
-    }
+      title: "Search",
+      description: "Simple Blog created with NodeJs, Express & MongoDB.",
+    };
     let searchTerm = req.body.searchTerm;
     const searchNoSpecialChar = searchTerm.replace(/[^a-zA-Z0-9]/g, "");
     const data = await Post.find({
       $or: [
-        { title: {$regex: new RegExp(searchNoSpecialChar, 'i') }},
-        { body: {$regex: new RegExp(searchNoSpecialChar, 'i') }}
-
-
-      ]
-    })
+        { title: { $regex: new RegExp(searchNoSpecialChar, "i") } },
+        { body: { $regex: new RegExp(searchNoSpecialChar, "i") } },
+      ],
+    });
     res.render("search", {
       data,
-      locals
+      locals,
     });
-    
   } catch (error) {
     console.log(error);
   }
-})
+});
 
 // GET Home Routes
 // router.get('/', async (req, res) => {
@@ -118,7 +115,10 @@ router.post('/search', async (req, res) => {
 // insertPostData();
 
 router.get("/about", (req, res) => {
-  res.render("about");
+  res.render("about", {
+    currentRoute: '/about'
+
+  });
 });
 
 module.exports = router;
